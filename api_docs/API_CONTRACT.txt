@@ -1,0 +1,137 @@
+================================================================
+  SALES TRACKER — API CONTRACT (mock → real)
+================================================================
+
+The app currently reads the JSON files in /assets/api as if they were
+live HTTP responses (see lib/services/api_service.dart). Each mock file
+maps to one real endpoint below. When your backend is ready, flip the
+flag `ApiService.useMock = false` and set `ApiService.baseUrl`.
+
+Base URL (real):   https://api.yourbrand.com/v1
+Auth:              Bearer <token>  (returned by POST /auth/login)
+
+----------------------------------------------------------------
+1) POST /auth/login
+----------------------------------------------------------------
+Request body:
+  { "mobile": "+966501234567", "password": "••••••" }
+
+Response  (mock file: assets/api/login.json):
+  {
+    "status": "success",
+    "message": "Login successful",
+    "token": "<jwt>",
+    "expiresIn": 3600,
+    "customerId": "CUST-1024"
+  }
+
+----------------------------------------------------------------
+2) GET /customers/me            (Authorization: Bearer <token>)
+----------------------------------------------------------------
+Response  (mock file: assets/api/customer.json):
+  {
+    "status": "success",
+    "data": {
+      "customerId": "CUST-1024",
+      "name": "Abdullah Altuwijri",
+      "mobile": "+966501234567",
+      "email": "...",
+      "points": 3450,
+      "tier": "Gold",
+      "memberSince": "2023-02-14"
+    }
+  }
+  NOTE: `mobile` is what the home-screen QR encodes so a branch can scan it.
+
+----------------------------------------------------------------
+3) GET /customers/me/transactions
+----------------------------------------------------------------
+Response  (mock file: assets/api/transactions.json):
+  {
+    "status": "success",
+    "count": 5,
+    "data": [
+      {
+        "id": "TXN-5001",
+        "date": "2026-07-28T14:32:00",   // ISO-8601
+        "branch": "Riyadh - Al Nakheel Mall",
+        "total": 189.00,
+        "currency": "SAR",
+        "pointsEarned": 189,
+        "paymentMethod": "Visa •••• 6411",
+        "status": "completed",           // completed | refunded | pending
+        "itemsCount": 3
+      }
+    ]
+  }
+
+----------------------------------------------------------------
+4) GET /customers/me/transactions/{id}
+----------------------------------------------------------------
+Response  (mock file: assets/api/transaction_{id}.json):
+  {
+    "status": "success",
+    "data": {
+      "id": "TXN-5001",
+      "date": "2026-07-28T14:32:00",
+      "branch": "Riyadh - Al Nakheel Mall",
+      "cashier": "Sara M.",
+      "status": "completed",
+      "currency": "SAR",
+      "paymentMethod": "Visa •••• 6411",
+      "pointsEarned": 189,
+      "items": [
+        { "name": "Signature Latte (Large)", "qty": 2, "unitPrice": 24.00, "lineTotal": 48.00 }
+      ],
+      "subtotal": 189.00,
+      "discount": 0.00,
+      "vat": 24.65,
+      "total": 189.00
+    }
+  }
+
+----------------------------------------------------------------
+5) GET /customers/me/points
+----------------------------------------------------------------
+Response  (mock file: assets/api/points.json):
+  {
+    "status": "success",
+    "data": {
+      "balance": 3450,
+      "totalEarned": 4200,
+      "totalRedeemed": 750,
+      "history": [
+        { "id": "PT-9001", "type": "earned", "points": 189,
+          "date": "2026-07-28T14:32:00", "reason": "Purchase TXN-5001",
+          "txnId": "TXN-5001" }
+      ]
+    }
+  }
+  NOTE: type is "earned" | "redeemed".
+
+----------------------------------------------------------------
+6) GET /rewards
+----------------------------------------------------------------
+Response  (mock file: assets/api/rewards.json):
+  {
+    "status": "success",
+    "data": [
+      { "id": "RW-01", "title": "50 SAR Voucher", "cost": 500,
+        "description": "Redeemable on any purchase above 100 SAR." }
+    ]
+  }
+
+----------------------------------------------------------------
+7) POST /rewards/{id}/redeem      (Authorization: Bearer <token>)
+----------------------------------------------------------------
+Deducts `cost` points and returns the new balance. The app currently
+performs this locally on the mock; wire it here for the real backend.
+  Response: { "status": "success", "data": { "balance": 2950 } }
+
+================================================================
+  HOW TO SWITCH TO THE REAL API
+================================================================
+  In lib/services/api_service.dart:
+    static bool  useMock = false;
+    static String baseUrl = "https://api.yourbrand.com/v1";
+  The method signatures stay identical, so no screen code changes.
