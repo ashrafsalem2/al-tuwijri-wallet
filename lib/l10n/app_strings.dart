@@ -83,6 +83,23 @@ class AppStrings {
   String get showAtCheckout => _('اعرض هذا عند الدفع', 'Show this at checkout');
   String get scanHint => _('يقوم الكاشير بمسح رمزك لربط عملية الشراء بك',
       'The cashier scans your code to link the sale to you');
+  String get refundBarcodeHint => _(
+      'يمسح الكاشير هذا الرمز لاسترجاع الفاتورة',
+      'Cashier scans this to retrieve the receipt');
+  String get refundBarcodeExpired => _(
+      'انتهت صلاحية رمز الاسترجاع (3 أيام من تاريخ الشراء)',
+      'Refund barcode expired (3 days from purchase)');
+  String get refundBarcodeValidity => _(
+      'هذا الرمز صالح لمدة 3 أيام فقط من تاريخ الشراء',
+      'This barcode is valid for only 3 days from the purchase date');
+  String get verifyingMembership =>
+      _('جارٍ التحقق من العضوية...', 'Verifying membership…');
+  String get notMemberTitle => _('لست عضواً في النادي', 'Not a registered member');
+  String get notMemberHint => _(
+      'رقم جوالك غير مسجّل في نظام التويجري. يُرجى التسجيل في أحد الفروع لتفعيل بطاقتك.',
+      "Your mobile isn't registered in Al Tuwijri. Please sign up at a branch to activate your card.");
+  String get verifyFailed =>
+      _('تعذّر التحقق من العضوية', 'Could not verify membership');
   String points(int n) => _('$n نقطة', '$n points');
   String get myTransactionsTip => _('عملياتي', 'My sales transactions');
 

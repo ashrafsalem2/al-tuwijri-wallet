@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../l10n/app_strings.dart';
@@ -7,6 +9,14 @@ import '../theme/app_theme.dart';
 import '../widgets/formatters.dart';
 import 'transaction_detail_screen.dart';
 
+/// Bumped by the shell each time the Sales tab is opened, so the list can
+/// refresh the moment the user switches to it (the tab is kept alive by the
+/// IndexedStack and would otherwise never reload).
+final ValueNotifier<int> salesTabTick = ValueNotifier<int>(0);
+
+/// How often the list quietly re-checks Business Central for new POS sales.
+const Duration _pollInterval = Duration(seconds: 15);
+
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
 
@@ -14,20 +24,53 @@ class TransactionsScreen extends StatefulWidget {
   State<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
-class _TransactionsScreenState extends State<TransactionsScreen> {
-  late Future<List<SalesTransaction>> _future;
+class _TransactionsScreenState extends State<TransactionsScreen>
+    with WidgetsBindingObserver {
+  List<SalesTransaction>? _items; // null = still loading the first time
+  Object? _error;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _future = ApiService.instance.getTransactions();
+    WidgetsBinding.instance.addObserver(this);
+    salesTabTick.addListener(_onTabOpened);
+    _load();
+    _timer = Timer.periodic(_pollInterval, (_) => _load(silent: true));
   }
 
-  Future<void> _refresh() async {
-    setState(() {
-      _future = ApiService.instance.getTransactions();
-    });
-    await _future;
+  @override
+  void dispose() {
+    _timer?.cancel();
+    salesTabTick.removeListener(_onTabOpened);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Refresh when the app comes back to the foreground.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _load(silent: true);
+  }
+
+  // Refresh the instant the user switches to the Sales tab.
+  void _onTabOpened() => _load(silent: true);
+
+  /// Fetch the list. When [silent] the current list stays on screen while the
+  /// call runs (no spinner, no flicker) and errors are swallowed so a dropped
+  /// poll doesn't wipe good data.
+  Future<void> _load({bool silent = false}) async {
+    try {
+      final data = await ApiService.instance.getTransactions();
+      if (!mounted) return;
+      setState(() {
+        _items = data;
+        _error = null;
+      });
+    } catch (e) {
+      if (!mounted || silent) return;
+      setState(() => _error = e);
+    }
   }
 
   @override
@@ -40,23 +83,32 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
-      body: FutureBuilder<List<SalesTransaction>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return _ErrorState(onRetry: _refresh, message: '${snapshot.error}');
-          }
-          final items = snapshot.data ?? [];
-          if (items.isEmpty) {
-            return Center(child: Text(t.noTransactions));
-          }
-          return RefreshIndicator(
-            color: AppColors.brand,
-            onRefresh: _refresh,
-            child: ListView.separated(
+      body: _buildBody(t),
+    );
+  }
+
+  Widget _buildBody(AppStrings t) {
+    if (_items == null && _error != null) {
+      return _ErrorState(onRetry: () => _load(), message: '$_error');
+    }
+    if (_items == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final items = _items!;
+    return RefreshIndicator(
+      color: AppColors.brand,
+      onRefresh: () => _load(silent: true),
+      child: items.isEmpty
+          ? ListView(
+              // ListView so pull-to-refresh still works on an empty list.
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Center(child: Text(t.noTransactions)),
+                ),
+              ],
+            )
+          : ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
               itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -65,9 +117,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 index: i,
               ),
             ),
-          );
-        },
-      ),
     );
   }
 }

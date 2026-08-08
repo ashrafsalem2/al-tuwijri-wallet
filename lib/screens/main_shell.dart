@@ -4,7 +4,7 @@ import '../l10n/app_strings.dart';
 import '../widgets/stylish_bottom_nav.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
-import 'transactions_screen.dart';
+import 'transactions_screen.dart' show TransactionsScreen, salesTabTick;
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -30,7 +30,11 @@ class _MainShellState extends State<MainShell> {
       body: IndexedStack(index: _index, children: _tabs),
       bottomNavigationBar: StylishBottomNav(
         currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
+        onTap: (i) {
+          // Opening the Sales tab pokes the list to refresh immediately.
+          if (i == 1) salesTabTick.value++;
+          setState(() => _index = i);
+        },
         items: [
           StylishNavItem(
             icon: Icons.qr_code_2_outlined,

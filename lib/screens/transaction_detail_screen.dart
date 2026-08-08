@@ -1,3 +1,4 @@
+import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/app_strings.dart';
@@ -26,28 +27,43 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.transactionId,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-      ),
-      body: FutureBuilder<TransactionDetail>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('${snapshot.error}'));
-          }
-          final d = snapshot.data!;
-          final t = AppStrings.of(context);
-          return ListView(
+    return FutureBuilder<TransactionDetail>(
+      future: _future,
+      builder: (context, snapshot) {
+        // Once loaded, title the screen with the receipt number (detail.id);
+        // until then, fall back to the id we navigated with.
+        final title = snapshot.hasData ? snapshot.data!.id : widget.transactionId;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          body: Builder(builder: (context) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('${snapshot.error}'));
+            }
+            final d = snapshot.data!;
+            final t = AppStrings.of(context);
+            return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
             children: [
               _HeaderCard(detail: d),
+              // Scannable receipt barcode — only within 14 days of the sale, so
+              // the cashier can pull up the receipt for a refund.
+              if (_isBarcodeActive(d.date)) ...[
+                const SizedBox(height: 12),
+                _ReceiptBarcode(
+                  data: d.id,
+                  // A refund receipt shows only the bare barcode — no notes.
+                  hint: d.isRefunded ? null : t.refundBarcodeHint,
+                  note: d.isRefunded ? null : t.refundBarcodeValidity,
+                ),
+              ],
               const SizedBox(height: 16),
               _sectionTitle(t.items),
               const SizedBox(height: 8),
@@ -62,10 +78,15 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               _MetaCard(detail: d),
             ],
           );
-        },
-      ),
+          }),
+        );
+      },
     );
   }
+
+  /// The refund barcode is valid for 3 days from the sale date.
+  bool _isBarcodeActive(DateTime saleDate) =>
+      DateTime.now().difference(saleDate).inDays <= 3;
 
   Widget _sectionTitle(String text) => Padding(
         padding: const EdgeInsets.only(left: 4),
@@ -149,6 +170,95 @@ class _HeaderCard extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// White card holding the scannable Code-128 barcode of the receipt number.
+/// Shown in the detail header so the cashier can scan it to retrieve the
+/// receipt when processing a refund.
+class _ReceiptBarcode extends StatelessWidget {
+  final String data;
+  final String? hint;
+  final String? note;
+  const _ReceiptBarcode({
+    required this.data,
+    this.hint,
+    this.note,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          if (hint != null) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.qr_code_scanner_rounded,
+                    size: 16, color: AppColors.textSecondary),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    hint!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
+          BarcodeWidget(
+            barcode: Barcode.code128(),
+            data: data,
+            width: double.infinity,
+            height: 74,
+            drawText: true,
+            color: Colors.black,
+            backgroundColor: Colors.white,
+            style: const TextStyle(
+              fontSize: 13,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          if (note != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.schedule_rounded,
+                    size: 14, color: AppColors.accent),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text(
+                    note!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -313,6 +423,7 @@ class _MetaCard extends StatelessWidget {
       child: Column(
         children: [
           _meta(Icons.confirmation_number_outlined, t.transactionId, detail.id),
+          // Hidden until BC exposes the real tender type (see backend notes).
           _meta(Icons.credit_card_rounded, t.payment, detail.paymentMethod),
           _meta(Icons.person_outline_rounded, t.cashier, detail.cashier),
           _meta(Icons.store_mall_directory_outlined, t.branch, detail.branch),
@@ -321,7 +432,9 @@ class _MetaCard extends StatelessWidget {
     );
   }
 
+  /// A meta row — renders nothing when the value is blank.
   Widget _meta(IconData icon, String label, String value) {
+    if (value.trim().isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(

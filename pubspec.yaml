@@ -15,6 +15,7 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   qr_flutter: ^4.1.0        # QR code with logo embedded in the middle
+  barcode_widget: ^2.0.4    # Code128 receipt barcode (cashier scans for refunds)
   lottie: ^3.1.3            # Lottie animations (login screen)
   google_fonts: ^6.2.1     # Tajawal (Arabic + Latin) typography
   intl: ^0.20.2             # date & currency formatting

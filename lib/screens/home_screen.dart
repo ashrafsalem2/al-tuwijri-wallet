@@ -3,12 +3,44 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../l10n/app_strings.dart';
 import '../models/customer.dart';
+import '../services/api_service.dart';
 import '../services/session.dart';
 import '../theme/app_theme.dart';
 import '../widgets/language_toggle.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final String _mobile = Session.instance.customer.value?.mobile ?? '';
+  late Future<Map<String, dynamic>> _membership;
+
+  @override
+  void initState() {
+    super.initState();
+    _membership = _verify();
+  }
+
+  Future<Map<String, dynamic>> _verify() {
+    return ApiService.instance.verifyMembership(_mobile).then((data) {
+      // Show the member's LIVE Business Central points in the app bar.
+      if (data['isMember'] == true && data['points'] is Map) {
+        final balance = (data['points']['balance'] as num?)?.toInt();
+        if (balance != null) Session.instance.setPoints(balance);
+      }
+      return data;
+    });
+  }
+
+  void _retry() {
+    setState(() {
+      _membership = _verify();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +49,6 @@ class HomeScreen extends StatelessWidget {
     return ValueListenableBuilder<Customer?>(
       valueListenable: Session.instance.customer,
       builder: (context, customer, _) {
-        final mobile = customer?.mobile ?? '';
         return Scaffold(
           appBar: AppBar(
             toolbarHeight: 76,
@@ -78,61 +109,173 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
-          body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                t.showAtCheckout,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                t.scanHint,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 28),
-              _QrCard(data: mobile),
-              const SizedBox(height: 20),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.phone_iphone_rounded,
-                        size: 18, color: AppColors.brand),
-                    const SizedBox(width: 8),
-                    Text(
-                      mobile,
-                      textDirection: TextDirection.ltr,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-                ],
-              ),
-            ),
+          body: FutureBuilder<Map<String, dynamic>>(
+            future: _membership,
+            builder: (context, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return _CenteredMessage(
+                  icon: null,
+                  spinner: true,
+                  title: t.verifyingMembership,
+                );
+              }
+              if (snap.hasError) {
+                return _CenteredMessage(
+                  icon: Icons.wifi_off_rounded,
+                  title: t.verifyFailed,
+                  subtitle: '${snap.error}',
+                  action: FilledButton(
+                    onPressed: _retry,
+                    style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.brand),
+                    child: Text(t.retry),
+                  ),
+                );
+              }
+              final isMember = snap.data?['isMember'] == true;
+              return isMember
+                  ? _MemberCard(mobile: _mobile, t: t)
+                  : _CenteredMessage(
+                      icon: Icons.person_off_rounded,
+                      title: t.notMemberTitle,
+                      subtitle: t.notMemberHint,
+                    );
+            },
           ),
         );
       },
+    );
+  }
+}
+
+/// The membership card (QR) shown only to verified BC members.
+class _MemberCard extends StatelessWidget {
+  final String mobile;
+  final AppStrings t;
+  const _MemberCard({required this.mobile, required this.t});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              t.showAtCheckout,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              t.scanHint,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 28),
+            _QrCard(data: mobile),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.phone_iphone_rounded,
+                      size: 18, color: AppColors.brand),
+                  const SizedBox(width: 8),
+                  Text(
+                    mobile,
+                    textDirection: TextDirection.ltr,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Centered state used for loading / not-a-member / error.
+class _CenteredMessage extends StatelessWidget {
+  final IconData? icon;
+  final bool spinner;
+  final String title;
+  final String? subtitle;
+  final Widget? action;
+  const _CenteredMessage({
+    required this.title,
+    this.icon,
+    this.spinner = false,
+    this.subtitle,
+    this.action,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (spinner)
+              const SizedBox(
+                width: 44,
+                height: 44,
+                child: CircularProgressIndicator(
+                    strokeWidth: 3, color: AppColors.brand),
+              )
+            else if (icon != null)
+              Container(
+                width: 92,
+                height: 92,
+                decoration: BoxDecoration(
+                  color: AppColors.brand.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 46, color: AppColors.brand),
+              ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+            ],
+            if (action != null) ...[
+              const SizedBox(height: 20),
+              action!,
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -164,13 +307,8 @@ class _QrCard extends StatelessWidget {
         version: QrVersions.auto,
         size: side,
         backgroundColor: Colors.white,
-        // Quiet zone: clean white margin around the code (~4 modules).
         padding: const EdgeInsets.all(18),
-        // High error correction (~30%) so the centered logo does NOT make the
-        // code unscannable — required whenever an embedded image is used.
         errorCorrectionLevel: QrErrorCorrectLevel.H,
-        // Standard square modules + black for maximum contrast: the biggest
-        // reliability win for hardware/phone scanners.
         eyeStyle: const QrEyeStyle(
           eyeShape: QrEyeShape.square,
           color: Colors.black,
@@ -179,12 +317,10 @@ class _QrCard extends StatelessWidget {
           dataModuleShape: QrDataModuleShape.square,
           color: Colors.black,
         ),
-        // Small centered logo so it covers as little of the code as possible.
         embeddedImage: const AssetImage('assets/images/brand_logo.png'),
         embeddedImageStyle: QrEmbeddedImageStyle(
           size: Size(side * 0.15, side * 0.15),
         ),
-        // If the logo asset is missing, still render the QR cleanly.
         embeddedImageEmitsError: false,
       ),
     );

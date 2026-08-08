@@ -25,7 +25,10 @@ class ApiService {
   static String _defaultBaseUrl() {
     if (kIsWeb) return 'http://localhost:5080';
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5080';
+      // Physical-device build: reach the backend over a Cloudflare tunnel, so it
+      // works on any network (bypasses the router's client isolation). HTTPS also
+      // satisfies Android's cleartext-traffic restriction.
+      return 'https://der-nobody-producing-obtain.trycloudflare.com';
     }
     return 'http://localhost:5080';
   }
@@ -134,15 +137,16 @@ class ApiService {
     return earned - redeemed;
   }
 
-  /// GET /transactions → the member's invoices.
+  /// GET /bc/members/transactions — the member's LIVE Business Central transactions.
   Future<List<SalesTransaction>> getTransactions() async {
-    final list = _dataList(await _get('/transactions')).where(_isMine);
+    final json = await _get('/bc/members/transactions?mobile=${currentMobile ?? ''}');
+    final list = (json['data'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
     return list.map((e) => SalesTransaction.fromJson(e)).toList();
   }
 
-  /// GET /transactions/{id}
+  /// GET /bc/members/transactions/{id} — one BC transaction with its lines.
   Future<TransactionDetail> getTransactionDetail(String id) async {
-    final json = await _get('/transactions/$id');
+    final json = await _get('/bc/members/transactions/$id?mobile=${currentMobile ?? ''}');
     return TransactionDetail.fromJson(json['data'] as Map<String, dynamic>);
   }
 
@@ -166,6 +170,13 @@ class ApiService {
       totalRedeemed: redeemed,
       history: history,
     );
+  }
+
+  /// GET /bc/members/verify?mobile=05... — checks the mobile against the live
+  /// Business Central members list. Returns {isMember, name, memberNo, clubCode}.
+  Future<Map<String, dynamic>> verifyMembership(String mobile) async {
+    final json = await _get('/bc/members/verify?mobile=$mobile');
+    return (json['data'] as Map<String, dynamic>?) ?? const {};
   }
 
   /// GET /rewards
