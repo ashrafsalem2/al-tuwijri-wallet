@@ -45,6 +45,23 @@ class AppStrings {
       'Demo credentials are pre-filled — just tap Sign In');
   String get enterMobile => _('أدخل رقم جوالك', 'Enter your mobile number');
   String get enterPassword => _('أدخل كلمة المرور', 'Enter your password');
+  // Remember me + biometric login
+  String get rememberMe => _('تذكرني', 'Remember me');
+  String get loginWithBiometrics =>
+      _('الدخول بالبصمة', 'Sign in with biometrics');
+  String get loginWithFace => _('الدخول بالتعرّف على الوجه', 'Sign in with Face');
+  String get loginWithFingerprint => _('الدخول ببصمة الإصبع', 'Sign in with fingerprint');
+  String get biometricReason =>
+      _('أكّد هويتك للدخول إلى محفظتك', 'Confirm your identity to open your wallet');
+  String get enableBiometricTitle =>
+      _('تفعيل الدخول بالبصمة؟', 'Enable biometric sign-in?');
+  String get enableBiometricBody => _(
+      'ادخل بسرعة وأمان باستخدام بصمتك أو وجهك في المرة القادمة.',
+      'Sign in quickly and securely with your fingerprint or face next time.');
+  String get enable => _('تفعيل', 'Enable');
+  String get notNow => _('ليس الآن', 'Not now');
+  String get biometricEnabled => _('تم تفعيل الدخول بالبصمة', 'Biometric sign-in enabled');
+  String get biometricFailed => _('تعذّر التحقق بالبصمة', 'Biometric check failed');
   String tooManyAttempts(int seconds) => _(
       'محاولات كثيرة، حاول مرة أخرى بعد $seconds ثانية',
       'Too many attempts. Try again in $seconds seconds.');
@@ -108,6 +125,14 @@ class AppStrings {
   String get noTransactions => _('لا توجد عمليات بعد', 'No transactions yet');
   String get retry => _('إعادة المحاولة', 'Retry');
   String itemsCount(int n) => _('$n منتج', '$n item(s)');
+  // Filters / search
+  String get searchTransactionsHint =>
+      _('ابحث برقم الإيصال أو الفرع أو المبلغ', 'Search by receipt, store or amount');
+  String get filterAll => _('الكل', 'All');
+  String get filterCompleted => _('مكتملة', 'Completed');
+  String get filterRefunded => _('مستردة', 'Refunded');
+  String get noResults => _('لا توجد نتائج مطابقة', 'No matching results');
+  String get clearSearch => _('مسح', 'Clear');
 
   // Statuses
   String status(String raw) {

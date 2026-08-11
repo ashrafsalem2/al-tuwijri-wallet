@@ -28,7 +28,7 @@ class ApiService {
       // Physical-device build: reach the backend over a Cloudflare tunnel, so it
       // works on any network (bypasses the router's client isolation). HTTPS also
       // satisfies Android's cleartext-traffic restriction.
-      return 'https://der-nobody-producing-obtain.trycloudflare.com';
+      return 'https://equipment-refuse-prepaid-freeze.trycloudflare.com';
     }
     return 'http://localhost:5080';
   }
@@ -248,6 +248,36 @@ class ApiService {
     }
     final json = jsonDecode(res.body) as Map<String, dynamic>;
     return json['devOtp'] as String?;
+  }
+
+  /// POST /users/{mobile}/biometric/enroll — record that this device enabled
+  /// biometric login for the user. Best-effort: never blocks the login flow.
+  Future<void> enrollBiometric({
+    required String mobile,
+    required String deviceId,
+    required String deviceName,
+  }) async {
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/users/${mobile.trim()}/biometric/enroll'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'deviceId': deviceId, 'deviceName': deviceName}),
+      );
+    } catch (_) {
+      // Enrollment is a convenience record; ignore transient failures.
+    }
+  }
+
+  /// DELETE /users/{mobile}/biometric/{deviceId} — remove this device's record.
+  Future<void> disableBiometric({
+    required String mobile,
+    required String deviceId,
+  }) async {
+    try {
+      await http.delete(
+        Uri.parse('$baseUrl/users/${mobile.trim()}/biometric/$deviceId'),
+      );
+    } catch (_) {}
   }
 
   /// POST /auth/reset-password — verify the OTP and set a new password.

@@ -21,6 +21,9 @@ dependencies:
   intl: ^0.20.2             # date & currency formatting
   hijri: ^3.0.0             # Hijri (Islamic) calendar dates
   http: ^1.2.2              # for the real API later (mock service ready to swap)
+  flutter_secure_storage: ^9.2.2  # encrypted store for remembered credentials
+  local_auth: ^2.3.0        # fingerprint / face biometric login (device only)
+  shared_preferences: ^2.3.2      # small non-secret flags (remember-me, biometric-on)
 
 dev_dependencies:
   flutter_test:

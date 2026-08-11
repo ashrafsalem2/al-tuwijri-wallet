@@ -24,11 +24,17 @@ class TransactionsScreen extends StatefulWidget {
   State<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
+enum _StatusFilter { all, completed, refunded }
+
 class _TransactionsScreenState extends State<TransactionsScreen>
     with WidgetsBindingObserver {
   List<SalesTransaction>? _items; // null = still loading the first time
   Object? _error;
   Timer? _timer;
+
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+  _StatusFilter _status = _StatusFilter.all;
 
   @override
   void initState() {
@@ -42,9 +48,31 @@ class _TransactionsScreenState extends State<TransactionsScreen>
   @override
   void dispose() {
     _timer?.cancel();
+    _searchCtrl.dispose();
     salesTabTick.removeListener(_onTabOpened);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  /// Apply the search text + status chip to the loaded list.
+  List<SalesTransaction> _applyFilters(List<SalesTransaction> all) {
+    final q = _query.trim().toLowerCase();
+    return all.where((txn) {
+      final matchesStatus = switch (_status) {
+        _StatusFilter.all => true,
+        _StatusFilter.completed => !txn.isRefunded,
+        _StatusFilter.refunded => txn.isRefunded,
+      };
+      if (!matchesStatus) return false;
+      if (q.isEmpty) return true;
+      final haystack = [
+        txn.branch,
+        txn.paymentMethod, // receipt no
+        txn.total.toStringAsFixed(2),
+        txn.total.toStringAsFixed(0),
+      ].join(' ').toLowerCase();
+      return haystack.contains(q);
+    }).toList();
   }
 
   // Refresh when the app comes back to the foreground.
@@ -94,29 +122,127 @@ class _TransactionsScreenState extends State<TransactionsScreen>
     if (_items == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    final items = _items!;
-    return RefreshIndicator(
-      color: AppColors.brand,
-      onRefresh: () => _load(silent: true),
-      child: items.isEmpty
-          ? ListView(
-              // ListView so pull-to-refresh still works on an empty list.
-              children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: Center(child: Text(t.noTransactions)),
-                ),
-              ],
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, i) => _TransactionCard(
-                txn: items[i],
-                index: i,
+    final all = _items!;
+    final visible = _applyFilters(all);
+    // Only show the filter bar once there's something to filter.
+    final showFilters = all.isNotEmpty;
+
+    return Column(
+      children: [
+        if (showFilters) _filterBar(t),
+        Expanded(
+          child: RefreshIndicator(
+            color: AppColors.brand,
+            onRefresh: () => _load(silent: true),
+            child: (all.isEmpty || visible.isEmpty)
+                ? ListView(
+                    // ListView so pull-to-refresh still works when empty.
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        child: Center(
+                          child: Text(
+                            all.isEmpty ? t.noTransactions : t.noResults,
+                            style: const TextStyle(
+                                color: AppColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                    itemCount: visible.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, i) => _TransactionCard(
+                      txn: visible[i],
+                      index: i,
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _filterBar(AppStrings t) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Column(
+        children: [
+          TextField(
+            controller: _searchCtrl,
+            onChanged: (v) => setState(() => _query = v),
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: t.searchTransactionsHint,
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: _query.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      tooltip: t.clearSearch,
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        setState(() => _query = '');
+                      },
+                    ),
+              isDense: true,
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: Colors.grey.shade200),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: Colors.grey.shade200),
               ),
             ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _statusChip(t.filterAll, _StatusFilter.all),
+              const SizedBox(width: 8),
+              _statusChip(t.filterCompleted, _StatusFilter.completed),
+              const SizedBox(width: 8),
+              _statusChip(t.filterRefunded, _StatusFilter.refunded),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusChip(String label, _StatusFilter value) {
+    final selected = _status == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _status = value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? AppColors.brand : Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: selected ? AppColors.brand : Colors.grey.shade300,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: selected ? Colors.white : AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
