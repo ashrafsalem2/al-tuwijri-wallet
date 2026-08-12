@@ -61,7 +61,20 @@ class AppStrings {
   String get enable => _('تفعيل', 'Enable');
   String get notNow => _('ليس الآن', 'Not now');
   String get biometricEnabled => _('تم تفعيل الدخول بالبصمة', 'Biometric sign-in enabled');
+  String get biometricDisabled => _('تم إيقاف الدخول بالبصمة', 'Biometric sign-in disabled');
   String get biometricFailed => _('تعذّر التحقق بالبصمة', 'Biometric check failed');
+  // Settings — biometric section
+  String get biometricSection => _('الأمان', 'Security');
+  String get biometricToggleLabel =>
+      _('الدخول بالبصمة أو الوجه', 'Fingerprint / Face sign-in');
+  String get biometricToggleHint => _(
+      'ادخل بسرعة باستخدام بصمتك أو وجهك بدلاً من كلمة المرور.',
+      'Sign in quickly with your fingerprint or face instead of your password.');
+  String get biometricUnavailable =>
+      _('غير مدعوم على هذا الجهاز', 'Not supported on this device');
+  String get confirmPasswordToEnable =>
+      _('أدخل كلمة المرور لتفعيل البصمة', 'Enter your password to enable biometrics');
+  String get wrongPassword => _('كلمة المرور غير صحيحة', 'Incorrect password');
   String tooManyAttempts(int seconds) => _(
       'محاولات كثيرة، حاول مرة أخرى بعد $seconds ثانية',
       'Too many attempts. Try again in $seconds seconds.');
