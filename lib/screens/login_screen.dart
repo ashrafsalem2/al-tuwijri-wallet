@@ -245,14 +245,24 @@ class _LoginScreenState extends State<LoginScreen>
               _animated(
                   0.15,
                   0.6,
-                  Text(
-                    t.welcomeBack,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          t.welcomeBack,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const _WavingHand(size: 26),
+                    ],
                   )),
               const SizedBox(height: 6),
               _animated(
@@ -440,6 +450,54 @@ class _LoginScreenState extends State<LoginScreen>
         child: const Icon(Icons.lock_person_rounded,
             size: 64, color: AppColors.brand),
       ),
+    );
+  }
+}
+
+/// A 👋 emoji that waves — rocking back and forth around the wrist, like a
+/// real wave. Pivots at the bottom so it swings from the base of the palm.
+class _WavingHand extends StatefulWidget {
+  final double size;
+  const _WavingHand({this.size = 24});
+
+  @override
+  State<_WavingHand> createState() => _WavingHandState();
+}
+
+class _WavingHandState extends State<_WavingHand>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  );
+
+  late final Animation<double> _wave = Tween<double>(
+    begin: -0.18,
+    end: 0.32,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.repeat(reverse: true); // continuous back-and-forth wave
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _wave,
+      builder: (_, child) => Transform.rotate(
+        angle: _wave.value,
+        alignment: Alignment.bottomCenter,
+        child: child,
+      ),
+      child: Text('👋', style: TextStyle(fontSize: widget.size)),
     );
   }
 }

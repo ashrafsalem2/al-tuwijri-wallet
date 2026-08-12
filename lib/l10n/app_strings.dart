@@ -34,7 +34,7 @@ class AppStrings {
       _('تابع مشترياتك واجمع نقاطك', 'Track every purchase, earn every point');
 
   // Login
-  String get welcomeBack => _('مرحباً بعودتك 👋', 'Welcome back 👋');
+  String get welcomeBack => _('مرحباً بعودتك', 'Welcome back');
   String get loginSubtitle =>
       _('سجّل الدخول لمتابعة مشترياتك ونقاطك',
         'Sign in to track your purchases and points');
