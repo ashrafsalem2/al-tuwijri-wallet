@@ -28,7 +28,7 @@ class ApiService {
       // Physical-device build: reach the backend over a Cloudflare tunnel, so it
       // works on any network (bypasses the router's client isolation). HTTPS also
       // satisfies Android's cleartext-traffic restriction.
-      return 'https://marina-almost-demonstration-are.trycloudflare.com';
+      return 'https://monitored-circles-folk-amanda.trycloudflare.com';
     }
     return 'http://localhost:5080';
   }

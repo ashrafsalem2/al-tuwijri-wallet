@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:lottie/lottie.dart';
 
 import '../l10n/app_strings.dart';
 import '../services/api_service.dart';
@@ -8,10 +7,16 @@ import '../services/auth_storage.dart';
 import '../services/biometric_service.dart';
 import '../services/session.dart';
 import '../theme/app_theme.dart';
+import '../widgets/brand_logo.dart';
+import '../widgets/gold_particles_background.dart';
 import '../widgets/language_toggle.dart';
 import 'forgot_password_screen.dart';
 import 'main_shell.dart';
 import 'register_screen.dart';
+
+const Color _gold = Color(0xFFE7C877);
+const Color _goldDeep = Color(0xFFC9A24B);
+const Color _onGold = Color(0xFF2A1E05);
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -68,7 +73,6 @@ class _LoginScreenState extends State<LoginScreen>
       }
     });
 
-    // If biometric is set up, invite the user to use it right away.
     if (bioAvailable && bioEnabled) {
       _biometricLogin();
     }
@@ -120,7 +124,6 @@ class _LoginScreenState extends State<LoginScreen>
       final customer = await ApiService.instance.getCustomer();
       Session.instance.setCustomer(customer);
 
-      // Persist / forget credentials per the "remember me" choice.
       final store = AuthStorage.instance;
       await store.setRememberMe(_remember);
       if (_remember || _biometricEnabled) {
@@ -129,7 +132,6 @@ class _LoginScreenState extends State<LoginScreen>
         await store.clearCredentials();
       }
 
-      // Offer to turn on biometric login the first time (device only).
       if (mounted &&
           offerBiometric &&
           _biometricAvailable &&
@@ -225,7 +227,10 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
     return Scaffold(
+      backgroundColor: const Color(0xFF0B0F1E),
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 8, left: 8),
@@ -234,173 +239,229 @@ class _LoginScreenState extends State<LoginScreen>
         ],
       ),
       extendBodyBehindAppBar: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _animated(0.0, 0.5, _lottieHeader()),
-              const SizedBox(height: 8),
-              _animated(
-                  0.15,
-                  0.6,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          t.welcomeBack,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+      body: GoldParticlesBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _animated(0.0, 0.5, _logoHeader()),
+                const SizedBox(height: 20),
+                _animated(
+                    0.15,
+                    0.6,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            t.welcomeBack,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        const _WavingHand(size: 26),
+                      ],
+                    )),
+                const SizedBox(height: 6),
+                _animated(
+                    0.2,
+                    0.65,
+                    Text(
+                      t.loginSubtitle,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6)),
+                    )),
+                const SizedBox(height: 28),
+                _animated(0.3, 0.85, _formCard(t)),
+                const SizedBox(height: 16),
+                _animated(
+                    0.65,
+                    1.0,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(t.noAccountYet,
+                            style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.6))),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const RegisterScreen()),
+                          ),
+                          child: Text(t.createAccount,
+                              style: const TextStyle(
+                                  color: _gold, fontWeight: FontWeight.w800)),
+                        ),
+                      ],
+                    )),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Gold app-icon-style logo with a soft glow, matching the concept.
+  Widget _logoHeader() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [_gold, _goldDeep],
+          ),
+          borderRadius: BorderRadius.circular(26),
+          boxShadow: [
+            BoxShadow(
+              color: _goldDeep.withValues(alpha: 0.45),
+              blurRadius: 34,
+              spreadRadius: 2,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: const BrandLogo(size: 66),
+      ),
+    );
+  }
+
+  /// The dark, translucent form card holding the inputs and actions.
+  Widget _formCard(AppStrings t) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.06),
+            labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+            floatingLabelStyle: const TextStyle(color: _gold),
+            prefixIconColor: _gold,
+            suffixIconColor: Colors.white54,
+            enabledBorder: _border(Colors.white.withValues(alpha: 0.15)),
+            border: _border(Colors.white.withValues(alpha: 0.15)),
+            focusedBorder: _border(_gold, width: 1.5),
+          ),
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _mobileCtrl,
+                keyboardType: TextInputType.phone,
+                textDirection: TextDirection.ltr,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: t.mobileNumber,
+                  prefixIcon: const Icon(Icons.phone_iphone_rounded),
+                ),
+                validator: (v) => (v == null || v.trim().length < 6)
+                    ? t.enterMobile
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passCtrl,
+                obscureText: _obscure,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: t.password,
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                ),
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? t.enterPassword : null,
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _remember,
+                    activeColor: _gold,
+                    checkColor: _onGold,
+                    side: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.5)),
+                    onChanged: (v) => setState(() => _remember = v ?? false),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _remember = !_remember),
+                      child: Text(t.rememberMe,
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.75),
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ForgotPasswordScreen(
+                          initialMobile: _mobileCtrl.text.trim().isEmpty
+                              ? '05'
+                              : _mobileCtrl.text.trim(),
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      const _WavingHand(size: 26),
-                    ],
-                  )),
-              const SizedBox(height: 6),
-              _animated(
-                  0.2,
-                  0.65,
-                  Text(
-                    t.loginSubtitle,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  )),
-              const SizedBox(height: 32),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _animated(
-                        0.3,
-                        0.75,
-                        TextFormField(
-                          controller: _mobileCtrl,
-                          keyboardType: TextInputType.phone,
-                          textDirection: TextDirection.ltr,
-                          decoration: InputDecoration(
-                            labelText: t.mobileNumber,
-                            prefixIcon: const Icon(Icons.phone_iphone_rounded),
+                    ),
+                    child: Text(t.forgotPassword,
+                        style: const TextStyle(
+                            color: _gold, fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 54,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _gold,
+                    foregroundColor: _onGold,
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    textStyle: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 16),
+                  ),
+                  onPressed: _loading ? null : _login,
+                  child: _loading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            valueColor: AlwaysStoppedAnimation(_onGold),
                           ),
-                          validator: (v) => (v == null || v.trim().length < 6)
-                              ? t.enterMobile
-                              : null,
-                        )),
-                    const SizedBox(height: 16),
-                    _animated(
-                        0.4,
-                        0.85,
-                        TextFormField(
-                          controller: _passCtrl,
-                          obscureText: _obscure,
-                          decoration: InputDecoration(
-                            labelText: t.password,
-                            prefixIcon: const Icon(Icons.lock_outline_rounded),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscure
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined),
-                              onPressed: () =>
-                                  setState(() => _obscure = !_obscure),
-                            ),
-                          ),
-                          validator: (v) => (v == null || v.isEmpty)
-                              ? t.enterPassword
-                              : null,
-                        )),
-                    const SizedBox(height: 6),
-                    // Remember me + forgot password on one row.
-                    _animated(
-                        0.45,
-                        0.9,
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _remember,
-                              activeColor: AppColors.brand,
-                              onChanged: (v) =>
-                                  setState(() => _remember = v ?? false),
-                            ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () =>
-                                    setState(() => _remember = !_remember),
-                                child: Text(t.rememberMe,
-                                    style: const TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontWeight: FontWeight.w600)),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => ForgotPasswordScreen(
-                                    initialMobile:
-                                        _mobileCtrl.text.trim().isEmpty
-                                            ? '05'
-                                            : _mobileCtrl.text.trim(),
-                                  ),
-                                ),
-                              ),
-                              child: Text(t.forgotPassword,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w700)),
-                            ),
-                          ],
-                        )),
-                    const SizedBox(height: 12),
-                    _animated(
-                        0.5,
-                        0.95,
-                        ElevatedButton(
-                          onPressed: _loading ? null : _login,
-                          child: _loading
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.4,
-                                    valueColor:
-                                        AlwaysStoppedAnimation(Colors.white),
-                                  ),
-                                )
-                              : Text(t.signIn),
-                        )),
-                    if (_biometricAvailable && _biometricEnabled) ...[
-                      const SizedBox(height: 12),
-                      _animated(0.55, 1.0, _biometricButton(t)),
-                    ],
-                  ],
+                        )
+                      : Text(t.signIn),
                 ),
               ),
-              const SizedBox(height: 12),
-              _animated(
-                  0.65,
-                  1.0,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(t.noAccountYet,
-                          style:
-                              const TextStyle(color: AppColors.textSecondary)),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const RegisterScreen()),
-                        ),
-                        child: Text(t.createAccount,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w700)),
-                      ),
-                    ],
-                  )),
+              if (_biometricAvailable && _biometricEnabled) ...[
+                const SizedBox(height: 12),
+                _biometricButton(t),
+              ],
             ],
           ),
         ),
@@ -408,47 +469,25 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  OutlineInputBorder _border(Color color, {double width = 1}) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: color, width: width),
+      );
+
   Widget _biometricButton(AppStrings t) {
     final isFace = _biometricTypes.contains(BiometricType.face);
     final icon = isFace ? Icons.face_rounded : Icons.fingerprint_rounded;
     final label = isFace ? t.loginWithFace : t.loginWithFingerprint;
     return OutlinedButton.icon(
       onPressed: _loading ? null : _biometricLogin,
-      icon: Icon(icon, color: AppColors.brand),
+      icon: Icon(icon, color: _gold),
       label: Text(label,
-          style: const TextStyle(
-              color: AppColors.brand, fontWeight: FontWeight.w700)),
+          style: const TextStyle(color: _gold, fontWeight: FontWeight.w700)),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
-        side: const BorderSide(color: AppColors.brand, width: 1.4),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-    );
-  }
-
-  Widget _lottieHeader() {
-    return SizedBox(
-      height: 200,
-      child: Lottie.asset(
-        'assets/lottie/login.json',
-        repeat: true,
-        errorBuilder: (context, error, stack) => _lottieFallback(),
-      ),
-    );
-  }
-
-  Widget _lottieFallback() {
-    return Center(
-      child: Container(
-        width: 130,
-        height: 130,
-        decoration: BoxDecoration(
-          color: AppColors.brand.withValues(alpha: 0.10),
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(Icons.lock_person_rounded,
-            size: 64, color: AppColors.brand),
+        side: BorderSide(color: _gold.withValues(alpha: 0.6), width: 1.4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
@@ -479,7 +518,7 @@ class _WavingHandState extends State<_WavingHand>
   @override
   void initState() {
     super.initState();
-    _controller.repeat(reverse: true); // continuous back-and-forth wave
+    _controller.repeat(reverse: true);
   }
 
   @override
