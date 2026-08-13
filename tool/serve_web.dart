@@ -22,6 +22,8 @@ const mime = {
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.map': 'application/json',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
 };
 
 String extOf(String p) {

@@ -2,6 +2,8 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
+
 import '../l10n/app_strings.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand_logo.dart';
@@ -27,9 +29,23 @@ class _SplashScreenState extends State<SplashScreen>
   // Slow rotation for the gold shimmer halo behind the logo.
   late final AnimationController _halo;
 
+  // Background video.
+  VideoPlayerController? _video;
+  bool _videoReady = false;
+
   @override
   void initState() {
     super.initState();
+    _video = VideoPlayerController.asset('assets/video/splash_bg.mp4')
+      ..setVolume(0)
+      ..setLooping(true);
+    _video!.initialize().then((_) {
+      if (!mounted) return;
+      _video!.play();
+      setState(() => _videoReady = true);
+    }).catchError((_) {
+      // If the video can't load, the maroon gradient fallback is used.
+    });
     _loop = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1700),
@@ -71,7 +87,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _goNext() async {
-    await Future.delayed(const Duration(milliseconds: 2900));
+    await Future.delayed(const Duration(milliseconds: 4200));
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
@@ -88,24 +104,56 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.dispose();
     _loop.dispose();
     _halo.dispose();
+    _video?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.brand, AppColors.brandDark],
+      backgroundColor: AppColors.brandDark,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background video (fills + crops to cover). Falls back to the maroon
+          // gradient until it's ready / if it fails to load.
+          if (_videoReady && _video != null)
+            FittedBox(
+              fit: BoxFit.cover,
+              clipBehavior: Clip.hardEdge,
+              child: SizedBox(
+                width: _video!.value.size.width,
+                height: _video!.value.size.height,
+                child: VideoPlayer(_video!),
+              ),
+            )
+          else
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF7B1E2B), Color(0xFF551017)],
+                ),
+              ),
+            ),
+          // Brand scrim over the video so the logo and text stay readable.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.brand.withValues(alpha: 0.62),
+                  AppColors.brandDark.withValues(alpha: 0.82),
+                ],
+              ),
+            ),
           ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               FadeTransition(
                 opacity: _fade,
                 child: ScaleTransition(
@@ -217,6 +265,7 @@ class _SplashScreenState extends State<SplashScreen>
             ],
           ),
         ),
+        ],
       ),
     );
   }

@@ -24,6 +24,7 @@ dependencies:
   flutter_secure_storage: ^9.2.2  # encrypted store for remembered credentials
   local_auth: ^2.3.0        # fingerprint / face biometric login (device only)
   shared_preferences: ^2.3.2      # small non-secret flags (remember-me, biometric-on)
+  video_player: ^2.9.2      # splash background video
 
 dev_dependencies:
   flutter_test:
@@ -54,3 +55,4 @@ flutter:
   assets:
     - assets/images/
     - assets/lottie/
+    - assets/video/
