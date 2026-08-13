@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 class StylishNavItem {
@@ -34,14 +34,14 @@ class StylishBottomNav extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(26),
           border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
           boxShadow: [
             BoxShadow(
               color: AppColors.brand.withValues(alpha: 0.16),
               blurRadius: 26,
-              offset: const Offset(0, 10),
+              offset: Offset(0, 10),
             ),
           ],
         ),
@@ -86,7 +86,7 @@ class _NavPill extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           gradient: selected
-              ? const LinearGradient(
+              ? LinearGradient(
                   colors: [AppColors.brand, AppColors.brandDark],
                 )
               : null,
@@ -96,7 +96,7 @@ class _NavPill extends StatelessWidget {
                   BoxShadow(
                     color: AppColors.brand.withValues(alpha: 0.35),
                     blurRadius: 14,
-                    offset: const Offset(0, 6),
+                    offset: Offset(0, 6),
                   ),
                 ]
               : null,
@@ -118,14 +118,14 @@ class _NavPill extends StatelessWidget {
                       padding: const EdgeInsetsDirectional.only(start: 8),
                       child: Text(
                         item.label,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 13.5,
                         ),
                       ),
                     )
-                  : const SizedBox.shrink(),
+                  : SizedBox.shrink(),
             ),
           ],
         ),

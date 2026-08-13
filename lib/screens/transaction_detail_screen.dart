@@ -1,4 +1,4 @@
-import 'package:barcode_widget/barcode_widget.dart';
+﻿import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/app_strings.dart';
@@ -37,12 +37,12 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           appBar: AppBar(
             title: Text(
               title,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
           body: Builder(builder: (context) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
               return Center(child: Text('${snapshot.error}'));
@@ -56,7 +56,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               // Scannable receipt barcode — only within 14 days of the sale, so
               // the cashier can pull up the receipt for a refund.
               if (_isBarcodeActive(d.date)) ...[
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _ReceiptBarcode(
                   data: d.id,
                   // A refund receipt shows only the bare barcode — no notes.
@@ -64,17 +64,17 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                   note: d.isRefunded ? null : t.refundBarcodeValidity,
                 ),
               ],
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _sectionTitle(t.items),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _ItemsCard(items: d.items, currency: d.currency),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _sectionTitle(t.summary),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _SummaryCard(detail: d),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _sectionTitle(t.details),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               _MetaCard(detail: d),
             ],
           );
@@ -92,7 +92,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         padding: const EdgeInsets.only(left: 4),
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 15,
             color: AppColors.textPrimary,
@@ -111,7 +111,7 @@ class _HeaderCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [AppColors.brand, AppColors.brandDark],
@@ -126,7 +126,7 @@ class _HeaderCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   detail.branch,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -142,7 +142,7 @@ class _HeaderCard extends StatelessWidget {
                 ),
                 child: Text(
                   t.status(detail.status),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -151,20 +151,20 @@ class _HeaderCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             formatDateTime(detail.date, locale: t.code),
             style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12.5),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             formatHijri(detail.date, locale: t.code),
-            style: const TextStyle(color: AppColors.accent, fontSize: 12.5, fontWeight: FontWeight.w600),
+            style: TextStyle(color: AppColors.accent, fontSize: 12.5, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18),
           Text(
             formatMoney(detail.total, detail.currency, locale: t.code),
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontSize: 30,
               fontWeight: FontWeight.w800,
@@ -204,14 +204,14 @@ class _ReceiptBarcode extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.qr_code_scanner_rounded,
+                Icon(Icons.qr_code_scanner_rounded,
                     size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Flexible(
                   child: Text(
                     hint!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -220,7 +220,7 @@ class _ReceiptBarcode extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
           ],
           BarcodeWidget(
             barcode: Barcode.code128(),
@@ -230,7 +230,7 @@ class _ReceiptBarcode extends StatelessWidget {
             drawText: true,
             color: Colors.black,
             backgroundColor: Colors.white,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               letterSpacing: 1.5,
               fontWeight: FontWeight.w600,
@@ -238,18 +238,18 @@ class _ReceiptBarcode extends StatelessWidget {
             ),
           ),
           if (note != null) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.schedule_rounded,
+                Icon(Icons.schedule_rounded,
                     size: 14, color: AppColors.accent),
-                const SizedBox(width: 5),
+                SizedBox(width: 5),
                 Flexible(
                   child: Text(
                     note!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11.5,
                       color: AppColors.accent,
                       fontWeight: FontWeight.w600,
@@ -275,7 +275,7 @@ class _ItemsCard extends StatelessWidget {
     final t = AppStrings.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -295,21 +295,21 @@ class _ItemsCard extends StatelessWidget {
                     ),
                     child: Text(
                       '${items[i].qty}×',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: AppColors.brand,
                         fontSize: 13,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           items[i].name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
                           ),
@@ -317,7 +317,7 @@ class _ItemsCard extends StatelessWidget {
                         Text(
                           t.each(formatMoney(items[i].unitPrice, currency,
                               locale: t.code)),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                           ),
@@ -327,7 +327,7 @@ class _ItemsCard extends StatelessWidget {
                   ),
                   Text(
                     formatMoney(items[i].lineTotal, currency, locale: t.code),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
@@ -354,7 +354,7 @@ class _SummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -417,7 +417,7 @@ class _MetaCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -434,23 +434,23 @@ class _MetaCard extends StatelessWidget {
 
   /// A meta row — renders nothing when the value is blank.
   Widget _meta(IconData icon, String label, String value) {
-    if (value.trim().isEmpty) return const SizedBox.shrink();
+    if (value.trim().isEmpty) return SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           Icon(icon, size: 20, color: AppColors.brand),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Text(
             label,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
-          const Spacer(),
+          Spacer(),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),

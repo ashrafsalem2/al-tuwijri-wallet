@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../l10n/app_strings.dart';
 import '../services/api_service.dart';
 import '../services/auth_storage.dart';
 import '../services/biometric_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 import '../widgets/language_toggle.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -111,14 +112,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(t.confirmPasswordToEnable, style: const TextStyle(fontSize: 17)),
+        title: Text(t.confirmPasswordToEnable, style: TextStyle(fontSize: 17)),
         content: TextField(
           controller: ctrl,
           obscureText: true,
           autofocus: true,
           decoration: InputDecoration(
             labelText: t.password,
-            prefixIcon: const Icon(Icons.lock_outline_rounded),
+            prefixIcon: Icon(Icons.lock_outline_rounded),
           ),
         ),
         actions: [
@@ -152,26 +153,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(t.settings,
-            style: const TextStyle(fontWeight: FontWeight.w700)),
+            style: TextStyle(fontWeight: FontWeight.w700)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _sectionLabel(t.appearance),
+          const SizedBox(height: 8),
+          _themeCard(t),
+          const SizedBox(height: 24),
           _sectionLabel(t.language),
           const SizedBox(height: 8),
           const LanguageSegmented(),
           const SizedBox(height: 24),
           if (_bioAvailable) ...[
             _sectionLabel(t.biometricSection),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             _biometricCard(t),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
           ],
           _sectionLabel(t.apiSettings),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(18),
             ),
             child: Padding(
@@ -180,10 +185,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t.apiBaseUrl,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   TextField(
                     controller: _baseUrlCtrl,
                     textDirection: TextDirection.ltr,
@@ -192,18 +197,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       prefixIcon: Icon(Icons.link_rounded),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Text(t.apiBaseUrlHint,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 12, color: AppColors.textSecondary)),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () => _save(t),
-            icon: const Icon(Icons.check_rounded),
+            icon: Icon(Icons.check_rounded),
             label: Text(t.save),
           ),
         ],
@@ -211,18 +216,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _biometricCard(AppStrings t) {
+  Widget _themeCard(AppStrings t) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
         child: Row(
           children: [
-            const Icon(Icons.fingerprint_rounded,
-                color: AppColors.brand, size: 26),
+            Icon(AppColors.isDark
+                ? Icons.dark_mode_rounded
+                : Icons.light_mode_rounded,
+                color: AppColors.brand, size: 24),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -231,22 +238,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
+                    child: Text(t.darkMode,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12, top: 2),
+                    child: Text(t.darkModeHint,
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary)),
+                  ),
+                ],
+              ),
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: ThemeController.isDark,
+              builder: (_, isDark, __) => Switch(
+                value: isDark,
+                activeThumbColor: AppColors.brand,
+                onChanged: (v) => ThemeController.setDark(v),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _biometricCard(AppStrings t) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
+        child: Row(
+          children: [
+            Icon(Icons.fingerprint_rounded,
+                color: AppColors.brand, size: 26),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
                     child: Text(t.biometricToggleLabel,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary)),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12, top: 2),
                     child: Text(t.biometricToggleHint,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12, color: AppColors.textSecondary)),
                   ),
                 ],
               ),
             ),
             _bioBusy
-                ? const Padding(
+                ? Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12),
                     child: SizedBox(
                         width: 22,
@@ -268,7 +323,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _sectionLabel(String text) => Padding(
         padding: const EdgeInsetsDirectional.only(start: 4),
         child: Text(text,
-            style: const TextStyle(
+            style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 15,
                 color: AppColors.textPrimary)),

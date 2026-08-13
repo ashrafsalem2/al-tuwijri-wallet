@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 
@@ -7,6 +7,7 @@ import '../models/sales_transaction.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/formatters.dart';
+import '../widgets/theme_toggle_button.dart';
 import 'transaction_detail_screen.dart';
 
 /// Bumped by the shell each time the Sales tab is opened, so the list can
@@ -110,6 +111,7 @@ class _TransactionsScreenState extends State<TransactionsScreen>
           t.myTransactions,
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
+        actions: const [ThemeToggleButton(), SizedBox(width: 8)],
       ),
       body: _buildBody(t),
     );
@@ -120,7 +122,7 @@ class _TransactionsScreenState extends State<TransactionsScreen>
       return _ErrorState(onRetry: () => _load(), message: '$_error');
     }
     if (_items == null) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
     final all = _items!;
     final visible = _applyFilters(all);
@@ -143,7 +145,7 @@ class _TransactionsScreenState extends State<TransactionsScreen>
                         child: Center(
                           child: Text(
                             all.isEmpty ? t.noTransactions : t.noResults,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppColors.textSecondary),
                           ),
                         ),
@@ -153,7 +155,7 @@ class _TransactionsScreenState extends State<TransactionsScreen>
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                     itemCount: visible.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, __) => SizedBox(height: 12),
                     itemBuilder: (context, i) => _TransactionCard(
                       txn: visible[i],
                       index: i,
@@ -176,11 +178,11 @@ class _TransactionsScreenState extends State<TransactionsScreen>
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
               hintText: t.searchTransactionsHint,
-              prefixIcon: const Icon(Icons.search_rounded),
+              prefixIcon: Icon(Icons.search_rounded),
               suffixIcon: _query.isEmpty
                   ? null
                   : IconButton(
-                      icon: const Icon(Icons.close_rounded),
+                      icon: Icon(Icons.close_rounded),
                       tooltip: t.clearSearch,
                       onPressed: () {
                         _searchCtrl.clear();
@@ -189,7 +191,7 @@ class _TransactionsScreenState extends State<TransactionsScreen>
                     ),
               isDense: true,
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppColors.surface,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
               border: OutlineInputBorder(
@@ -202,13 +204,13 @@ class _TransactionsScreenState extends State<TransactionsScreen>
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Row(
             children: [
               _statusChip(t.filterAll, _StatusFilter.all),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               _statusChip(t.filterCompleted, _StatusFilter.completed),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               _statusChip(t.filterRefunded, _StatusFilter.refunded),
             ],
           ),
@@ -264,7 +266,7 @@ class _TransactionCard extends StatelessWidget {
         child: Transform.translate(offset: Offset(0, (1 - t) * 20), child: child),
       ),
       child: Material(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
@@ -294,32 +296,32 @@ class _TransactionCard extends StatelessWidget {
                     color: txn.isRefunded ? AppColors.danger : AppColors.brand,
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         txn.branch,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         '${formatDate(txn.date, locale: t.code)} • ${t.itemsCount(txn.itemsCount)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(
                         formatHijri(txn.date, locale: t.code),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11.5,
                           color: AppColors.brand,
                           fontWeight: FontWeight.w600,
@@ -328,7 +330,7 @@ class _TransactionCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -345,7 +347,7 @@ class _TransactionCard extends StatelessWidget {
                             : null,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     _StatusChip(status: txn.status, label: t.status(txn.status)),
                   ],
                 ),
@@ -398,11 +400,11 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded,
+            Icon(Icons.error_outline_rounded,
                 size: 56, color: AppColors.danger),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             ElevatedButton(
                 onPressed: onRetry,
                 child: Text(AppStrings.of(context).retry)),

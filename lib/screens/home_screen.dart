@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../l10n/app_strings.dart';
@@ -7,6 +7,7 @@ import '../services/api_service.dart';
 import '../services/session.dart';
 import '../theme/app_theme.dart';
 import '../widgets/language_toggle.dart';
+import '../widgets/theme_toggle_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -60,14 +61,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   backgroundColor: AppColors.brand.withValues(alpha: 0.12),
                   child: Text(
                     (customer?.firstName.characters.first ?? '?').toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.brand,
                       fontWeight: FontWeight.w700,
                       fontSize: 18,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         customer?.name ?? '-',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
@@ -84,12 +85,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.stars_rounded,
+                          Icon(Icons.stars_rounded,
                               size: 15, color: AppColors.accent),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             t.points(customer?.points ?? 0),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -103,8 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             actions: const [
+              ThemeToggleButton(),
               Padding(
-                padding: EdgeInsetsDirectional.only(end: 12),
+                padding: EdgeInsetsDirectional.only(end: 12, start: 4),
                 child: LanguageToggleButton(),
               ),
             ],
@@ -164,38 +166,38 @@ class _MemberCard extends StatelessWidget {
           children: [
             Text(
               t.showAtCheckout,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               t.scanHint,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
-            const SizedBox(height: 28),
+            SizedBox(height: 28),
             _QrCard(data: mobile),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(color: Colors.grey.shade200),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.phone_iphone_rounded,
+                  Icon(Icons.phone_iphone_rounded,
                       size: 18, color: AppColors.brand),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     mobile,
                     textDirection: TextDirection.ltr,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                       letterSpacing: 0.5,
@@ -235,7 +237,7 @@ class _CenteredMessage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (spinner)
-              const SizedBox(
+              SizedBox(
                 width: 44,
                 height: 44,
                 child: CircularProgressIndicator(
@@ -251,26 +253,26 @@ class _CenteredMessage extends StatelessWidget {
                 ),
                 child: Icon(icon, size: 46, color: AppColors.brand),
               ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
               ),
             ),
             if (subtitle != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 subtitle!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
             if (action != null) ...[
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               action!,
             ],
           ],
@@ -298,7 +300,7 @@ class _QrCard extends StatelessWidget {
           BoxShadow(
             color: AppColors.brand.withValues(alpha: 0.12),
             blurRadius: 40,
-            offset: const Offset(0, 18),
+            offset: Offset(0, 18),
           ),
         ],
       ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../l10n/app_strings.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand_logo.dart';
@@ -75,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -99,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen>
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.25),
                           blurRadius: 40,
-                          offset: const Offset(0, 20),
+                          offset: Offset(0, 20),
                         ),
                       ],
                     ),
@@ -107,21 +107,21 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: 28),
               FadeTransition(
                 opacity: _textFade,
                 child: Column(
                   children: [
                     Text(
                       AppStrings.of(context).appName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Text(
                       AppStrings.of(context).tagline,
                       style: TextStyle(
@@ -132,10 +132,10 @@ class _SplashScreenState extends State<SplashScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 44),
+              SizedBox(height: 44),
               FadeTransition(
                 opacity: _textFade,
-                child: const SizedBox(
+                child: SizedBox(
                   width: 26,
                   height: 26,
                   child: CircularProgressIndicator(

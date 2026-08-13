@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../l10n/app_strings.dart';
 import '../services/api_service.dart';
@@ -85,7 +85,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final t = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        actions: const [
+        actions: [
           Padding(
             padding: EdgeInsetsDirectional.only(end: 8),
             child: LanguageToggleButton(),
@@ -108,21 +108,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     color: AppColors.brand.withValues(alpha: 0.10),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.lock_reset_rounded,
+                  child: Icon(Icons.lock_reset_rounded,
                       size: 42, color: AppColors.brand),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18),
                 Text(t.resetTitle,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary)),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(t.resetSubtitle,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: AppColors.textSecondary)),
-                const SizedBox(height: 26),
+                    style: TextStyle(color: AppColors.textSecondary)),
+                SizedBox(height: 26),
                 TextFormField(
                   controller: _mobileCtrl,
                   keyboardType: TextInputType.phone,
@@ -130,18 +130,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   enabled: !_codeSent,
                   decoration: InputDecoration(
                     labelText: t.mobileNumber,
-                    prefixIcon: const Icon(Icons.phone_iphone_rounded),
+                    prefixIcon: Icon(Icons.phone_iphone_rounded),
                   ),
                 ),
                 if (!_codeSent) ...[
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: _busy ? null : () => _sendCode(t),
                     child: _busy ? _spinner() : Text(t.sendCode),
                   ),
                 ],
                 if (_codeSent) ...[
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   if (_devOtp != null)
                     Container(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -154,11 +154,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.info_outline_rounded,
+                          Icon(Icons.info_outline_rounded,
                               size: 16, color: Color(0xFF9A7B2E)),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           Text(t.devCode(_devOtp!),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF9A7B2E))),
@@ -171,18 +171,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     textDirection: TextDirection.ltr,
                     decoration: InputDecoration(
                       labelText: t.verificationCode,
-                      prefixIcon: const Icon(Icons.pin_rounded),
+                      prefixIcon: Icon(Icons.pin_rounded),
                     ),
                     validator: (v) =>
                         (v == null || v.trim().isEmpty) ? t.enterCode : null,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   TextFormField(
                     controller: _newCtrl,
                     obscureText: _obscure,
                     decoration: InputDecoration(
                       labelText: t.newPassword,
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      prefixIcon: Icon(Icons.lock_outline_rounded),
                       suffixIcon: IconButton(
                         icon: Icon(_obscure
                             ? Icons.visibility_outlined
@@ -193,12 +193,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     validator: (v) =>
                         (v == null || v.length < 4) ? t.passwordTooShort : null,
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: _busy ? null : () => _reset(t),
                     child: _busy ? _spinner() : Text(t.resetPasswordAction),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   TextButton(
                     onPressed: _busy ? null : () => _sendCode(t),
                     child: Text(t.resendCode),
@@ -212,7 +212,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _spinner() => const SizedBox(
+  Widget _spinner() => SizedBox(
         width: 22,
         height: 22,
         child: CircularProgressIndicator(

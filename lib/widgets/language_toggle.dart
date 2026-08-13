@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../l10n/app_strings.dart';
 import '../theme/app_theme.dart';
 
@@ -30,7 +30,7 @@ class LanguageToggleButton extends StatelessWidget {
             child: Text(
               isArabic ? 'EN' : 'ع',
               key: ValueKey(isArabic),
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
                 color: AppColors.brand,
@@ -88,7 +88,7 @@ class LanguageSegmented extends StatelessWidget {
                     BoxShadow(
                       color: AppColors.brand.withValues(alpha: 0.25),
                       blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 4),
                     ),
                   ]
                 : null,

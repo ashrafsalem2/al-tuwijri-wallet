@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../l10n/app_strings.dart';
@@ -8,15 +8,11 @@ import '../services/biometric_service.dart';
 import '../services/session.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand_logo.dart';
-import '../widgets/gold_particles_background.dart';
 import '../widgets/language_toggle.dart';
+import '../widgets/theme_toggle_button.dart';
 import 'forgot_password_screen.dart';
 import 'main_shell.dart';
 import 'register_screen.dart';
-
-const Color _gold = Color(0xFFE7C877);
-const Color _goldDeep = Color(0xFFC9A24B);
-const Color _onGold = Color(0xFF2A1E05);
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _remember = false;
   bool _biometricAvailable = false;
   bool _biometricEnabled = false;
-  List<BiometricType> _biometricTypes = const [];
+  List<BiometricType> _biometricTypes = [];
 
   late final AnimationController _entrance;
 
@@ -159,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen>
     final wants = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.fingerprint_rounded,
+        icon: Icon(Icons.fingerprint_rounded,
             size: 42, color: AppColors.brand),
         title: Text(t.enableBiometricTitle, textAlign: TextAlign.center),
         content: Text(t.enableBiometricBody, textAlign: TextAlign.center),
@@ -226,88 +222,91 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final t = AppStrings.of(context);
+    final dark = AppColors.isDark;
+    final content = SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _animated(0.0, 0.5, _logoHeader()),
+            const SizedBox(height: 20),
+            _animated(
+                0.15,
+                0.6,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        t.welcomeBack,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const _WavingHand(size: 26),
+                  ],
+                )),
+            const SizedBox(height: 6),
+            _animated(
+                0.2,
+                0.65,
+                Text(
+                  t.loginSubtitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary),
+                )),
+            const SizedBox(height: 28),
+            _animated(0.3, 0.85, _formCard(t)),
+            const SizedBox(height: 16),
+            _animated(
+                0.65,
+                1.0,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(t.noAccountYet,
+                        style: TextStyle(color: AppColors.textSecondary)),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => const RegisterScreen()),
+                      ),
+                      child: Text(t.createAccount,
+                          style: TextStyle(
+                              color: AppColors.brand,
+                              fontWeight: FontWeight.w800)),
+                    ),
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F1E),
+      backgroundColor: dark ? Colors.transparent : AppColors.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: const [
+          ThemeToggleButton(),
           Padding(
-            padding: EdgeInsets.only(right: 8, left: 8),
+            padding: EdgeInsetsDirectional.only(end: 8, start: 4),
             child: LanguageToggleButton(),
           )
         ],
       ),
       extendBodyBehindAppBar: true,
-      body: GoldParticlesBackground(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _animated(0.0, 0.5, _logoHeader()),
-                const SizedBox(height: 20),
-                _animated(
-                    0.15,
-                    0.6,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            t.welcomeBack,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const _WavingHand(size: 26),
-                      ],
-                    )),
-                const SizedBox(height: 6),
-                _animated(
-                    0.2,
-                    0.65,
-                    Text(
-                      t.loginSubtitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6)),
-                    )),
-                const SizedBox(height: 28),
-                _animated(0.3, 0.85, _formCard(t)),
-                const SizedBox(height: 16),
-                _animated(
-                    0.65,
-                    1.0,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(t.noAccountYet,
-                            style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6))),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const RegisterScreen()),
-                          ),
-                          child: Text(t.createAccount,
-                              style: const TextStyle(
-                                  color: _gold, fontWeight: FontWeight.w800)),
-                        ),
-                      ],
-                    )),
-              ],
-            ),
-          ),
-        ),
-      ),
+      // The gold-particle backdrop (dark mode) is applied globally in app.dart,
+      // so every screen — including this one — shares the login's look.
+      body: content,
     );
   }
 
@@ -317,15 +316,15 @@ class _LoginScreenState extends State<LoginScreen>
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [_gold, _goldDeep],
+            colors: [const Color(0xFFE7C877), AppColors.accent],
           ),
           borderRadius: BorderRadius.circular(26),
           boxShadow: [
             BoxShadow(
-              color: _goldDeep.withValues(alpha: 0.45),
+              color: AppColors.accent.withValues(alpha: 0.45),
               blurRadius: 34,
               spreadRadius: 2,
               offset: const Offset(0, 10),
@@ -337,143 +336,124 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  /// The dark, translucent form card holding the inputs and actions.
+  /// The form card holding the inputs and actions. Translucent on the dark
+  /// particle backdrop; a solid white card in light mode.
   Widget _formCard(AppStrings t) {
+    final dark = AppColors.isDark;
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 22, 18, 22),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: dark ? Colors.white.withValues(alpha: 0.05) : AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: dark
+            ? Border.all(color: Colors.white.withValues(alpha: 0.08))
+            : null,
+        boxShadow: dark
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.brand.withValues(alpha: 0.08),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          inputDecorationTheme: InputDecorationTheme(
-            filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.06),
-            labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
-            floatingLabelStyle: const TextStyle(color: _gold),
-            prefixIconColor: _gold,
-            suffixIconColor: Colors.white54,
-            enabledBorder: _border(Colors.white.withValues(alpha: 0.15)),
-            border: _border(Colors.white.withValues(alpha: 0.15)),
-            focusedBorder: _border(_gold, width: 1.5),
-          ),
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _mobileCtrl,
-                keyboardType: TextInputType.phone,
-                textDirection: TextDirection.ltr,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: t.mobileNumber,
-                  prefixIcon: const Icon(Icons.phone_iphone_rounded),
-                ),
-                validator: (v) => (v == null || v.trim().length < 6)
-                    ? t.enterMobile
-                    : null,
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _mobileCtrl,
+              keyboardType: TextInputType.phone,
+              textDirection: TextDirection.ltr,
+              style: TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
+                labelText: t.mobileNumber,
+                prefixIcon: const Icon(Icons.phone_iphone_rounded),
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passCtrl,
-                obscureText: _obscure,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: t.password,
-                  prefixIcon: const Icon(Icons.lock_outline_rounded),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscure
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined),
-                    onPressed: () => setState(() => _obscure = !_obscure),
+              validator: (v) =>
+                  (v == null || v.trim().length < 6) ? t.enterMobile : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _passCtrl,
+              obscureText: _obscure,
+              style: TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
+                labelText: t.password,
+                prefixIcon: const Icon(Icons.lock_outline_rounded),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscure
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined),
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                ),
+              ),
+              validator: (v) =>
+                  (v == null || v.isEmpty) ? t.enterPassword : null,
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Checkbox(
+                  value: _remember,
+                  activeColor: AppColors.brand,
+                  checkColor: dark ? const Color(0xFF2A1E05) : Colors.white,
+                  onChanged: (v) => setState(() => _remember = v ?? false),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _remember = !_remember),
+                    child: Text(t.rememberMe,
+                        style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600)),
                   ),
                 ),
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? t.enterPassword : null,
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _remember,
-                    activeColor: _gold,
-                    checkColor: _onGold,
-                    side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.5)),
-                    onChanged: (v) => setState(() => _remember = v ?? false),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _remember = !_remember),
-                      child: Text(t.rememberMe,
-                          style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.75),
-                              fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ForgotPasswordScreen(
-                          initialMobile: _mobileCtrl.text.trim().isEmpty
-                              ? '05'
-                              : _mobileCtrl.text.trim(),
-                        ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ForgotPasswordScreen(
+                        initialMobile: _mobileCtrl.text.trim().isEmpty
+                            ? '05'
+                            : _mobileCtrl.text.trim(),
                       ),
                     ),
-                    child: Text(t.forgotPassword,
-                        style: const TextStyle(
-                            color: _gold, fontWeight: FontWeight.w700)),
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 54,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _gold,
-                    foregroundColor: _onGold,
-                    elevation: 0,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                    textStyle: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 16),
-                  ),
-                  onPressed: _loading ? null : _login,
-                  child: _loading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.4,
-                            valueColor: AlwaysStoppedAnimation(_onGold),
-                          ),
-                        )
-                      : Text(t.signIn),
+                  child: Text(t.forgotPassword,
+                      style: TextStyle(
+                          color: AppColors.brand,
+                          fontWeight: FontWeight.w700)),
                 ),
-              ),
-              if (_biometricAvailable && _biometricEnabled) ...[
-                const SizedBox(height: 12),
-                _biometricButton(t),
               ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _loading ? null : _login,
+                child: _loading
+                    ? SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor: AlwaysStoppedAnimation(
+                              dark ? const Color(0xFF2A1E05) : Colors.white),
+                        ),
+                      )
+                    : Text(t.signIn),
+              ),
+            ),
+            if (_biometricAvailable && _biometricEnabled) ...[
+              const SizedBox(height: 12),
+              _biometricButton(t),
             ],
-          ),
+          ],
         ),
       ),
     );
   }
-
-  OutlineInputBorder _border(Color color, {double width = 1}) =>
-      OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: color, width: width),
-      );
 
   Widget _biometricButton(AppStrings t) {
     final isFace = _biometricTypes.contains(BiometricType.face);
@@ -481,12 +461,13 @@ class _LoginScreenState extends State<LoginScreen>
     final label = isFace ? t.loginWithFace : t.loginWithFingerprint;
     return OutlinedButton.icon(
       onPressed: _loading ? null : _biometricLogin,
-      icon: Icon(icon, color: _gold),
+      icon: Icon(icon, color: AppColors.brand),
       label: Text(label,
-          style: const TextStyle(color: _gold, fontWeight: FontWeight.w700)),
+          style: TextStyle(
+              color: AppColors.brand, fontWeight: FontWeight.w700)),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
-        side: BorderSide(color: _gold.withValues(alpha: 0.6), width: 1.4),
+        side: BorderSide(color: AppColors.brand.withValues(alpha: 0.6), width: 1.4),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
