@@ -1,7 +1,4 @@
-﻿import 'dart:math' as math;
-import 'dart:ui' as ui;
-
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../l10n/app_strings.dart';
@@ -26,9 +23,6 @@ class _SplashScreenState extends State<SplashScreen>
   // Continuous "breathing" + gold-glow pulse on the logo.
   late final AnimationController _loop;
   late final Animation<double> _breathe;
-  // Slow rotation for the gold shimmer halo behind the logo.
-  late final AnimationController _halo;
-
   // Background video.
   VideoPlayerController? _video;
   bool _videoReady = false;
@@ -56,10 +50,6 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1700),
     )..repeat(reverse: true);
     _breathe = CurvedAnimation(parent: _loop, curve: Curves.easeInOut);
-    _halo = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    )..repeat();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
@@ -108,7 +98,6 @@ class _SplashScreenState extends State<SplashScreen>
   void dispose() {
     _controller.dispose();
     _loop.dispose();
-    _halo.dispose();
     _video?.dispose();
     super.dispose();
   }
@@ -163,70 +152,40 @@ class _SplashScreenState extends State<SplashScreen>
                 opacity: _fade,
                 child: ScaleTransition(
                   scale: _scale,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Slowly-rotating soft gold shimmer ring behind the logo.
-                      AnimatedBuilder(
-                        animation: _halo,
-                        builder: (context, _) => Transform.rotate(
-                          angle: _halo.value * 2 * math.pi,
-                          child: ImageFiltered(
-                            imageFilter:
-                                ui.ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                            child: Container(
-                              width: 250,
-                              height: 250,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: SweepGradient(
-                                  colors: [
-                                    AppColors.accent.withValues(alpha: 0.0),
-                                    AppColors.accent.withValues(alpha: 0.55),
-                                    AppColors.accent.withValues(alpha: 0.0),
-                                    AppColors.accent.withValues(alpha: 0.45),
-                                    AppColors.accent.withValues(alpha: 0.0),
-                                  ],
-                                  stops: const [0.0, 0.2, 0.45, 0.7, 1.0],
-                                ),
-                              ),
+                  // Same gold-framed logo as the login screen (thin gold border,
+                  // rounded, clipped) with a gentle breathing gold glow.
+                  child: AnimatedBuilder(
+                    animation: _breathe,
+                    builder: (context, child) {
+                      final v = _breathe.value; // 0..1 eased
+                      return Transform.scale(
+                        scale: 1.0 + 0.03 * v,
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFFE7C877), Color(0xFFC9A24B)],
                             ),
+                            borderRadius: BorderRadius.circular(26),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.accent
+                                    .withValues(alpha: 0.35 + 0.35 * v),
+                                blurRadius: 26 + 30 * v,
+                                spreadRadius: 1 + 5 * v,
+                              ),
+                            ],
                           ),
+                          child: child,
                         ),
-                      ),
-                      // The logo card with breathing + gold glow.
-                      AnimatedBuilder(
-                        animation: _breathe,
-                        builder: (context, child) {
-                          final v = _breathe.value; // 0..1 eased
-                          return Transform.scale(
-                            scale: 1.0 + 0.035 * v,
-                            child: Container(
-                              padding: const EdgeInsets.all(28),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(36),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.25),
-                                    blurRadius: 40,
-                                    offset: const Offset(0, 20),
-                                  ),
-                                  BoxShadow(
-                                    color: AppColors.accent
-                                        .withValues(alpha: 0.30 + 0.35 * v),
-                                    blurRadius: 24 + 34 * v,
-                                    spreadRadius: 1 + 6 * v,
-                                  ),
-                                ],
-                              ),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: const BrandLogo(size: 120),
-                      ),
-                    ],
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(23),
+                      child: const BrandLogo(size: 132),
+                    ),
                   ),
                 ),
               ),
