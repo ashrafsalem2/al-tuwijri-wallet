@@ -22,7 +22,13 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(t.navProfile,
             style: const TextStyle(fontWeight: FontWeight.w700)),
-        actions: const [ThemeToggleButton(), SizedBox(width: 8)],
+        actions: const [
+          ThemeToggleButton(),
+          Padding(
+            padding: EdgeInsetsDirectional.only(end: 8, start: 4),
+            child: LanguageToggleButton(),
+          ),
+        ],
       ),
       body: ValueListenableBuilder<Customer?>(
         valueListenable: Session.instance.customer,

@@ -35,14 +35,70 @@ class SalesTrackerApp extends StatelessWidget {
               ],
               // In dark mode every screen sits on the gold-particle backdrop
               // (scaffolds are transparent), so the whole app matches the login.
-              builder: (context, child) => isDark
-                  ? GoldParticlesBackground(child: child ?? const SizedBox())
-                  : (child ?? const SizedBox()),
+              // A short fade plays whenever the theme or language changes.
+              builder: (context, child) {
+                final content = _ModeTransition(
+                  modeKey: '${isDark ? 'd' : 'l'}:${locale.languageCode}',
+                  child: child ?? const SizedBox(),
+                );
+                return isDark
+                    ? GoldParticlesBackground(child: content)
+                    : ColoredBox(color: AppColors.bg, child: content);
+              },
               home: const SplashScreen(),
             );
           },
         );
       },
     );
+  }
+}
+
+/// Plays a quick fade whenever [modeKey] changes (theme or language switch),
+/// briefly revealing the backdrop so the palette swap reads as a smooth
+/// transition rather than an instant jump. Keeps the same child (navigation is
+/// preserved).
+class _ModeTransition extends StatefulWidget {
+  final Widget child;
+  final String modeKey;
+  const _ModeTransition({required this.child, required this.modeKey});
+
+  @override
+  State<_ModeTransition> createState() => _ModeTransitionState();
+}
+
+class _ModeTransitionState extends State<_ModeTransition>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 480),
+  );
+
+  late final Animation<double> _opacity = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)),
+      weight: 42,
+    ),
+    TweenSequenceItem(
+      tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)),
+      weight: 58,
+    ),
+  ]).animate(_controller);
+
+  @override
+  void didUpdateWidget(covariant _ModeTransition old) {
+    super.didUpdateWidget(old);
+    if (old.modeKey != widget.modeKey) _controller.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(opacity: _opacity, child: widget.child);
   }
 }

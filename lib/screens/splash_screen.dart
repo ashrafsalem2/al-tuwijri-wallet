@@ -1,4 +1,7 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:math' as math;
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
 import '../l10n/app_strings.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand_logo.dart';
@@ -18,9 +21,24 @@ class _SplashScreenState extends State<SplashScreen>
   late final Animation<double> _scale;
   late final Animation<double> _textFade;
 
+  // Continuous "breathing" + gold-glow pulse on the logo.
+  late final AnimationController _loop;
+  late final Animation<double> _breathe;
+  // Slow rotation for the gold shimmer halo behind the logo.
+  late final AnimationController _halo;
+
   @override
   void initState() {
     super.initState();
+    _loop = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat(reverse: true);
+    _breathe = CurvedAnimation(parent: _loop, curve: Curves.easeInOut);
+    _halo = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
@@ -68,6 +86,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _controller.dispose();
+    _loop.dispose();
+    _halo.dispose();
     super.dispose();
   }
 
@@ -90,20 +110,70 @@ class _SplashScreenState extends State<SplashScreen>
                 opacity: _fade,
                 child: ScaleTransition(
                   scale: _scale,
-                  child: Container(
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(36),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.25),
-                          blurRadius: 40,
-                          offset: Offset(0, 20),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Slowly-rotating soft gold shimmer ring behind the logo.
+                      AnimatedBuilder(
+                        animation: _halo,
+                        builder: (context, _) => Transform.rotate(
+                          angle: _halo.value * 2 * math.pi,
+                          child: ImageFiltered(
+                            imageFilter:
+                                ui.ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                            child: Container(
+                              width: 250,
+                              height: 250,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: SweepGradient(
+                                  colors: [
+                                    AppColors.accent.withValues(alpha: 0.0),
+                                    AppColors.accent.withValues(alpha: 0.55),
+                                    AppColors.accent.withValues(alpha: 0.0),
+                                    AppColors.accent.withValues(alpha: 0.45),
+                                    AppColors.accent.withValues(alpha: 0.0),
+                                  ],
+                                  stops: const [0.0, 0.2, 0.45, 0.7, 1.0],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                    child: const BrandLogo(size: 120),
+                      ),
+                      // The logo card with breathing + gold glow.
+                      AnimatedBuilder(
+                        animation: _breathe,
+                        builder: (context, child) {
+                          final v = _breathe.value; // 0..1 eased
+                          return Transform.scale(
+                            scale: 1.0 + 0.035 * v,
+                            child: Container(
+                              padding: const EdgeInsets.all(28),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(36),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    blurRadius: 40,
+                                    offset: const Offset(0, 20),
+                                  ),
+                                  BoxShadow(
+                                    color: AppColors.accent
+                                        .withValues(alpha: 0.30 + 0.35 * v),
+                                    blurRadius: 24 + 34 * v,
+                                    spreadRadius: 1 + 6 * v,
+                                  ),
+                                ],
+                              ),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: const BrandLogo(size: 120),
+                      ),
+                    ],
                   ),
                 ),
               ),

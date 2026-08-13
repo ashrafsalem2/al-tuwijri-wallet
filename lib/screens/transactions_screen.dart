@@ -7,6 +7,7 @@ import '../models/sales_transaction.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/formatters.dart';
+import '../widgets/language_toggle.dart';
 import '../widgets/theme_toggle_button.dart';
 import 'transaction_detail_screen.dart';
 
@@ -111,7 +112,13 @@ class _TransactionsScreenState extends State<TransactionsScreen>
           t.myTransactions,
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        actions: const [ThemeToggleButton(), SizedBox(width: 8)],
+        actions: const [
+          ThemeToggleButton(),
+          Padding(
+            padding: EdgeInsetsDirectional.only(end: 8, start: 4),
+            child: LanguageToggleButton(),
+          ),
+        ],
       ),
       body: _buildBody(t),
     );
