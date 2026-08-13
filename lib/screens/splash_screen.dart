@@ -131,16 +131,19 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-          // Brand scrim over the video so the logo and text stay readable.
+          // Light brand scrim so the video shows through while the logo and
+          // text stay readable (darker toward the bottom where the text sits).
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.brand.withValues(alpha: 0.62),
-                  AppColors.brandDark.withValues(alpha: 0.82),
+                  AppColors.brandDark.withValues(alpha: 0.30),
+                  AppColors.brandDark.withValues(alpha: 0.35),
+                  AppColors.brandDark.withValues(alpha: 0.72),
                 ],
+                stops: const [0.0, 0.5, 1.0],
               ),
             ),
           ),
