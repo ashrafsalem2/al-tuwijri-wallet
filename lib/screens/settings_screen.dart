@@ -227,7 +227,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           children: [
             Icon(AppColors.isDark
-                ? Icons.dark_mode_rounded
+                ? Icons.auto_awesome_rounded
                 : Icons.light_mode_rounded,
                 color: AppColors.brand, size: 24),
             const SizedBox(width: 14),

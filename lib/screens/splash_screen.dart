@@ -36,7 +36,12 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _video = VideoPlayerController.asset('assets/video/splash_bg.mp4')
+    _video = VideoPlayerController.asset(
+      'assets/video/splash_bg.mp4',
+      // mixWithOthers = don't grab audio focus, so music/podcasts in other apps
+      // keep playing; combined with volume 0 the splash is fully silent.
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    )
       ..setVolume(0)
       ..setLooping(true);
     _video!.initialize().then((_) {

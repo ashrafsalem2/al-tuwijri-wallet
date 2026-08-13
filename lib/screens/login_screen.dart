@@ -314,14 +314,14 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _logoHeader() {
     return Center(
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [const Color(0xFFE7C877), AppColors.accent],
           ),
-          borderRadius: BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
               color: AppColors.accent.withValues(alpha: 0.45),
@@ -331,7 +331,10 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ],
         ),
-        child: const BrandLogo(size: 66),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(19),
+          child: const BrandLogo(size: 84),
+        ),
       ),
     );
   }

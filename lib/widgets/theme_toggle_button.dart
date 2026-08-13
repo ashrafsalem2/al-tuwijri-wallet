@@ -18,7 +18,7 @@ class ThemeToggleButton extends StatelessWidget {
             backgroundColor: AppColors.brand.withValues(alpha: 0.12),
             foregroundColor: AppColors.brand,
           ),
-          tooltip: isDark ? 'Light mode' : 'Dark mode',
+          tooltip: isDark ? 'Light mode' : 'Golden mode',
           onPressed: () => ThemeController.toggle(),
           icon: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
@@ -27,7 +27,8 @@ class ThemeToggleButton extends StatelessWidget {
               child: FadeTransition(opacity: anim, child: child),
             ),
             child: Icon(
-              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              // Sparkle = switch to Golden mode; sun = back to Light.
+              isDark ? Icons.light_mode_rounded : Icons.auto_awesome_rounded,
               key: ValueKey(isDark),
               size: 20,
               color: AppColors.brand,

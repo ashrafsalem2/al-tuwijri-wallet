@@ -65,9 +65,9 @@ class AppStrings {
   String get biometricFailed => _('تعذّر التحقق بالبصمة', 'Biometric check failed');
   // Settings — biometric section
   String get appearance => _('المظهر', 'Appearance');
-  String get darkMode => _('الوضع الداكن', 'Dark mode');
+  String get darkMode => _('الوضع الذهبي', 'Golden mode');
   String get darkModeHint => _(
-      'مظهر داكن بلمسات ذهبية', 'Dark theme with gold accents');
+      'مظهر داكن فاخر بلمسات ذهبية', 'Luxurious dark theme with gold accents');
   String get biometricSection => _('الأمان', 'Security');
   String get biometricToggleLabel =>
       _('الدخول بالبصمة أو الوجه', 'Fingerprint / Face sign-in');
