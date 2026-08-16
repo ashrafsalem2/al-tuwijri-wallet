@@ -28,9 +28,36 @@ class ApiService {
       // Physical-device build: reach the backend over a Cloudflare tunnel, so it
       // works on any network (bypasses the router's client isolation). HTTPS also
       // satisfies Android's cleartext-traffic restriction.
-      return 'https://monitored-circles-folk-amanda.trycloudflare.com';
+      return 'https://exposure-integration-rotation-judy.trycloudflare.com';
     }
     return 'http://localhost:5080';
+  }
+
+  /// Stable config file that always holds the CURRENT backend URL. The PC
+  /// publishes the live tunnel URL here on each boot, so the installed app
+  /// self-heals when the tunnel rotates — no reinstall needed.
+  static const String _remoteConfigUrl =
+      'https://raw.githubusercontent.com/ashrafsalem2/al-tuwijri-wallet/main/backend-url.txt';
+
+  /// Resolve the live backend URL from the remote config before the app starts
+  /// (physical Android only). Falls back to the baked default on any failure.
+  static Future<void> resolveBaseUrl() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      final uri = Uri.parse(
+          '$_remoteConfigUrl?cb=${DateTime.now().millisecondsSinceEpoch}');
+      final res = await http
+          .get(uri, headers: {'Cache-Control': 'no-cache'})
+          .timeout(const Duration(seconds: 6));
+      if (res.statusCode == 200) {
+        final url = res.body.trim();
+        if (url.startsWith('https://') && url.length < 200) {
+          baseUrl = url;
+        }
+      }
+    } catch (_) {
+      // Keep the baked default if the config can't be reached.
+    }
   }
 
   Future<Map<String, dynamic>> _get(String path) async {
