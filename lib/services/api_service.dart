@@ -28,27 +28,31 @@ class ApiService {
       // Physical-device build: reach the backend over a Cloudflare tunnel, so it
       // works on any network (bypasses the router's client isolation). HTTPS also
       // satisfies Android's cleartext-traffic restriction.
-      return 'https://exposure-integration-rotation-judy.trycloudflare.com';
+      return 'https://enabling-incentive-clicks-sin.trycloudflare.com';
     }
     return 'http://localhost:5080';
   }
 
-  /// Stable config file that always holds the CURRENT backend URL. The PC
-  /// publishes the live tunnel URL here on each boot, so the installed app
-  /// self-heals when the tunnel rotates — no reinstall needed.
+  /// Stable config that always holds the CURRENT backend URL. The PC publishes
+  /// the live tunnel URL here on each boot, so the installed app self-heals when
+  /// the tunnel rotates — no reinstall needed. We read it via the GitHub API
+  /// (not raw.githubusercontent) because the API returns fresh content
+  /// immediately, whereas raw is cached for 5 minutes.
   static const String _remoteConfigUrl =
-      'https://raw.githubusercontent.com/ashrafsalem2/al-tuwijri-wallet/main/backend-url.txt';
+      'https://api.github.com/repos/ashrafsalem2/al-tuwijri-wallet/contents/backend-url.txt';
 
   /// Resolve the live backend URL from the remote config before the app starts
   /// (physical Android only). Falls back to the baked default on any failure.
   static Future<void> resolveBaseUrl() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     try {
-      final uri = Uri.parse(
-          '$_remoteConfigUrl?cb=${DateTime.now().millisecondsSinceEpoch}');
-      final res = await http
-          .get(uri, headers: {'Cache-Control': 'no-cache'})
-          .timeout(const Duration(seconds: 6));
+      final res = await http.get(
+        Uri.parse(_remoteConfigUrl),
+        headers: const {
+          'Accept': 'application/vnd.github.raw',
+          'User-Agent': 'AlTuwijriWallet',
+        },
+      ).timeout(const Duration(seconds: 6));
       if (res.statusCode == 200) {
         final url = res.body.trim();
         if (url.startsWith('https://') && url.length < 200) {
@@ -60,8 +64,31 @@ class ApiService {
     }
   }
 
+  /// GET with a few retries on transient failures (5xx / timeout / socket), so
+  /// brief tunnel hiccups (e.g. a Cloudflare 502) don't surface as errors.
+  Future<http.Response> _getWithRetry(Uri uri, {Map<String, String>? headers}) async {
+    Object? lastError;
+    for (var attempt = 1; attempt <= 3; attempt++) {
+      try {
+        final res = await http
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 20));
+        if (res.statusCode < 500) return res; // ok or client error: don't retry
+        lastError = ApiException('Request failed (${res.statusCode})');
+      } catch (e) {
+        lastError = e;
+      }
+      if (attempt < 3) {
+        await Future.delayed(Duration(milliseconds: 600 * attempt));
+      }
+    }
+    throw lastError is ApiException
+        ? lastError
+        : ApiException('Network error. Please try again.');
+  }
+
   Future<Map<String, dynamic>> _get(String path) async {
-    final res = await http.get(Uri.parse('$baseUrl$path'),
+    final res = await _getWithRetry(Uri.parse('$baseUrl$path'),
         headers: {'Content-Type': 'application/json'});
     if (res.statusCode != 200) {
       throw ApiException(_errorMessage(res, 'Request failed (${res.statusCode})'));
@@ -91,7 +118,7 @@ class ApiService {
       'mobile': mobile.trim(),
       'password': password,
     });
-    final res = await http.get(uri);
+    final res = await _getWithRetry(uri);
     if (res.statusCode != 200) {
       int? locked;
       try {
