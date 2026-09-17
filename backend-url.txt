@@ -1,1 +1,1 @@
-https://passed-rouge-paintings-muscle.trycloudflare.com
+https://api.trycloudflare.com
