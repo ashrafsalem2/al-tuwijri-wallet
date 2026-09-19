@@ -1,1 +1,1 @@
-https://api.trycloudflare.com
+https://nam-courses-room-schedules.trycloudflare.com
